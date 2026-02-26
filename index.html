@@ -142,7 +142,26 @@
   }
 
   @media (max-width: 800px) {
-    .model-layout { grid-template-columns: 1fr; }
+    .container { padding: 24px 16px; }
+    .model-layout {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+  }
+
+  @media (max-width: 500px) {
+    .stage-header {
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .stage-header .stage-founder-stat {
+      width: 100%;
+      text-align: left;
+    }
+    .journey-segment {
+      font-size: 10px;
+      min-width: 0 !important;
+    }
   }
 
   .controls-panel {
@@ -150,8 +169,13 @@
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 24px;
-    position: sticky;
-    top: 24px;
+  }
+
+  @media (min-width: 801px) {
+    .controls-panel {
+      position: sticky;
+      top: 24px;
+    }
   }
 
   .controls-panel h2 {
