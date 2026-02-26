@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InfraRed — Equity & Dilution Model</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f8f9fa;
+    --border: #e0e4e8;
+    --accent: #00a870;
+    --accent2: #e55a2b;
+    --accent3: #2d7dd2;
+    --text: #1a1a2e;
+    --muted: #5a6270;
+    --card: #f0f2f5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .noise {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 48px 24px; position: relative; z-index: 1; }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+    margin-bottom: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo-area h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .logo-area h1 span { color: var(--accent); }
+  .logo-area p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+  .badge {
+    background: linear-gradient(135deg, var(--accent)22, var(--accent)08);
+    border: 1px solid var(--accent)44;
+    color: var(--accent);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* EXPLAINER SECTION */
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .explainer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .concept-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .concept-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .concept-card.green::before { background: var(--accent); }
+  .concept-card.orange::before { background: var(--accent2); }
+  .concept-card.blue::before { background: var(--accent3); }
+
+  .concept-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .concept-card.green h3 { color: var(--accent); }
+  .concept-card.orange h3 { color: var(--accent2); }
+  .concept-card.blue h3 { color: var(--accent3); }
+
+  .concept-card p { color: var(--muted); line-height: 1.7; font-size: 15px; }
+  .concept-card .example {
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border-radius: 4px;
+    font-size: 14px;
+    border-left: 3px solid var(--border);
+  }
+  .concept-card.green .example { border-left-color: var(--accent)66; }
+  .concept-card.orange .example { border-left-color: var(--accent2)66; }
+  .concept-card.blue .example { border-left-color: var(--accent3)66; }
+
+  /* MODEL SECTION */
+  .model-layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  @media (max-width: 800px) {
+    .model-layout { grid-template-columns: 1fr; }
+  }
+
+  .controls-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    position: sticky;
+    top: 24px;
+  }
+
+  .controls-panel h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .control-group {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .control-group:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  .control-group-title {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+
+  .input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  .input-row:last-child { margin-bottom: 0; }
+
+  label {
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  label .val {
+    font-weight: 500;
+    color: var(--text);
+    background: var(--surface);
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    min-width: 70px;
+    text-align: right;
+    font-size: 13px;
+  }
+
+  input[type=range] {
+    width: 100%;
+    height: 4px;
+    appearance: none;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+  /* RESULTS */
+  .results-panel { display: flex; flex-direction: column; gap: 20px; }
+
+  .stage-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .stage-card:hover { border-color: var(--accent)44; }
+
+  .stage-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .stage-header-left { display: flex; align-items: center; gap: 12px; }
+
+  .stage-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--accent)55;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .stage-header h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .stage-header .stage-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  .stage-founder-stat {
+    text-align: right;
+  }
+  .stage-founder-stat .pct {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stage-founder-stat .lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .stage-body { padding: 20px; }
+
+  .cap-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+  }
+
+  .cap-table th {
+    text-align: left;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 0 10px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+  }
+  .cap-table th:last-child { text-align: right; }
+
+  .cap-table td {
+    padding: 10px 0;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border)66;
+    vertical-align: middle;
+  }
+  .cap-table td:last-child { text-align: right; }
+  .cap-table tr:last-child td { border-bottom: none; }
+
+  .cap-table .party-name { font-weight: 500; color: var(--text); }
+  .cap-table .party-basis { color: var(--muted); font-size: 13px; }
+  .cap-table .pct-val { font-weight: 600; }
+  .cap-table .founders-row td { color: var(--accent); }
+  .cap-table .new-row td .party-name { color: var(--accent2); }
+
+  .bar-wrapper {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    margin-top: 4px;
+    overflow: hidden;
+    width: 100px;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--accent)66;
+    transition: width 0.4s cubic-bezier(.4,0,.2,1);
+  }
+  .founders-row .bar-fill { background: var(--accent); }
+  .new-row .bar-fill { background: var(--accent2)99; }
+
+  .stage-insight {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .stage-insight strong { color: var(--text); }
+
+  /* SUMMARY BAR */
+  .summary-track {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .summary-track h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: var(--text);
+  }
+
+  .journey-bar {
+    display: flex;
+    gap: 2px;
+    height: 40px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .journey-segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(0,0,0,0.75);
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 0 4px;
+  }
+
+  .journey-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .stage-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 11px;
+    gap: 8px;
+    padding: 4px 0;
+  }
+  .stage-connector::before, .stage-connector::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  .toggle-icon { transition: transform 0.2s; color: var(--muted); }
+  .stage-body.collapsed { display: none; }
+  .toggled .toggle-icon { transform: rotate(180deg); }
+
+  input[type=number] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type=number]:focus { border-color: var(--accent)88; }
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+
+  <header>
+    <div class="logo-area">
+      <h1>Infra<span>Red</span> — Equity Model</h1>
+      <p>DFS Lab × InfraRed · Dilution walkthrough · February 2026</p>
+    </div>
+    <div class="badge">Confidential</div>
+  </header>
+
+  <!-- EXPLAINER -->
+  <div class="section-label">Key Concepts — Plain English</div>
+  <div class="explainer-grid">
+    <div class="concept-card green">
+      <h3>What is a SAFE?</h3>
+      <p>A SAFE (Simple Agreement for Future Equity) is not a loan and not shares yet. It's a promise that when a future funding round happens, your investor's money converts into shares at an agreed price. It lets you raise money now without having to officially price the company.</p>
+      <div class="example">DFS Lab gives InfraRed $100K today. InfraRed doesn't issue shares immediately. When a priced round happens (like YC or Seed), the $100K converts into shares automatically.</div>
+    </div>
+    <div class="concept-card orange">
+      <h3>What is a Valuation Cap?</h3>
+      <p>The cap is the maximum valuation at which your SAFE converts into shares. It protects early investors — even if your company is worth $10M when it converts, they convert as if it's worth the cap. This means they get more shares for their money.</p>
+      <div class="example">DFS Lab's cap is $3.5M (in your scenario). If InfraRed is worth $10M at Seed, DFS Lab still converts as if it's $3.5M — giving them a better deal as reward for investing early.</div>
+    </div>
+    <div class="concept-card blue">
+      <h3>What is Dilution?</h3>
+      <p>Every time you issue new shares (for investors, employees, etc.), the total number of shares grows — so each existing share represents a smaller slice of the pie. Your ownership % goes down. This is dilution. It's not necessarily bad — a smaller % of a bigger, more valuable company can be worth far more.</p>
+      <div class="example">You own 90% of a $1M company = $900K. After dilution you own 51% of a $40M company = $20.4M. The % dropped but the value exploded.</div>
+    </div>
+    <div class="concept-card green">
+      <h3>What is an ESOP Pool?</h3>
+      <p>An Employee Stock Option Pool (ESOP) is equity set aside to hire and retain employees. Investors typically require a 10-15% pool to be created before their investment, which dilutes founders. Managing how fast you grant options matters a lot.</p>
+      <div class="example">If you've given away most of your 10% ESOP pool by Series A, investors will demand you top it back up to ~12% before the round closes. Every point of that top-up comes from founders, not investors.</div>
+    </div>
+    <div class="concept-card orange">
+      <h3>What is an MFN Clause?</h3>
+      <p>Most Favoured Nation means an uncapped SAFE investor gets to convert at whatever the best terms are among future investors. Your existing $25K angels have uncapped SAFEs with MFN — they'll automatically get DFS Lab's $3.5M cap, because that's the reference price.</p>
+      <div class="example">Angel invested $25K on an uncapped SAFE + MFN. DFS Lab comes in at $3.5M cap. Angel now converts at $3.5M cap too — same as DFS Lab.</div>
+    </div>
+    <div class="concept-card blue">
+      <h3>Post-Money vs Pre-Money SAFE</h3>
+      <p>A post-money SAFE fixes your ownership % at the time of signing, regardless of who else invests later. $100K / $3.5M cap = 2.86% — that's DFS Lab's share, locked. A pre-money SAFE would mean more investors reduce DFS Lab's share. Post-money is cleaner and more predictable for both sides.</p>
+      <div class="example">DFS Lab: $100K / $3.5M = 2.86% ownership, locked at signing. Even if more angels pile in, DFS Lab stays at 2.86%.</div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="section-label">Founder Ownership Journey</div>
+  <div class="summary-track">
+    <h2>How Founder Ownership Shrinks Stage by Stage</h2>
+    <div class="journey-bar" id="journeyBar"></div>
+    <div class="journey-legend" id="journeyLegend"></div>
+  </div>
+
+  <!-- MODEL -->
+  <div class="section-label">Interactive Model — Adjust the Numbers</div>
+  <div class="model-layout">
+
+    <div class="controls-panel">
+      <h2>⚙ Model Inputs</h2>
+
+      <div class="control-group">
+        <div class="control-group-title">Pre-Seed (Now)</div>
+        <div class="input-row">
+          <label>DFS Lab SAFE Cap <span class="val" id="v_cap">$3.5M</span></label>
+          <input type="range" id="cap" min="1000000" max="6000000" step="50000" value="3500000">
+        </div>
+        <div class="input-row">
+          <label>DFS Lab Investment <span class="val" id="v_dfs">$100K</span></label>
+          <input type="range" id="dfs" min="25000" max="300000" step="5000" value="100000">
+        </div>
+        <div class="input-row">
+          <label>Existing Angels <span class="val" id="v_angels">$25K</span></label>
+          <input type="range" id="angels" min="0" max="100000" step="5000" value="25000">
+        </div>
+        <div class="input-row">
+          <label>Additional Pre-Seed Investors <span class="val" id="v_other">$225K</span></label>
+          <input type="range" id="other" min="0" max="500000" step="5000" value="225000">
+        </div>
+        <div style="margin-top:8px;padding:8px 12px;background:var(--accent)0a;border:1px solid var(--accent)22;border-radius:4px;font-size:11px;color:var(--muted)">
+          Total pre-seed raise: <strong id="v_total_preseed" style="color:var(--accent)">$350K</strong> &nbsp;·&nbsp; All on same $3.5M cap
+        </div>
+        <div class="input-row">
+          <label>ESOP Pool <span class="val" id="v_esop">10%</span></label>
+          <input type="range" id="esop" min="5" max="20" step="0.5" value="10">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-group-title">YC Stage</div>
+        <div class="input-row">
+          <label>YC $125K tranche <span class="val" id="v_yc1">7%</span></label>
+          <input type="range" id="yc1" min="5" max="10" step="0.5" value="7">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-group-title">Seed Round</div>
+        <div class="input-row">
+          <label>Seed Raise <span class="val" id="v_seedraise">$1.5M</span></label>
+          <input type="range" id="seedraise" min="500000" max="4000000" step="100000" value="1500000">
+        </div>
+        <div class="input-row">
+          <label>Seed Post-Money Val. <span class="val" id="v_seedval">$15M</span></label>
+          <input type="range" id="seedval" min="5000000" max="40000000" step="500000" value="15000000">
+        </div>
+        <div class="input-row">
+          <label>YC $375K MFN converts at seed val. — auto</label>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-group-title">Series A</div>
+        <div class="input-row">
+          <label>Series A % Sold <span class="val" id="v_seriesapct">20%</span></label>
+          <input type="range" id="seriesapct" min="10" max="35" step="1" value="20">
+        </div>
+        <div class="input-row">
+          <label>Series A Post-Money <span class="val" id="v_seriesaval">$40M</span></label>
+          <input type="range" id="seriesaval" min="15000000" max="120000000" step="1000000" value="40000000">
+        </div>
+      </div>
+    </div>
+
+    <div class="results-panel" id="resultsPanel"></div>
+  </div>
+
+</div>
+
+<script>
+const fmt = (n, decimals=1) => n.toFixed(decimals) + '%';
+const fmtM = (n) => {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(2).replace(/\.?0+$/, '') + 'M';
+  if (n >= 1000) return '$' + (n/1000).toFixed(0) + 'K';
+  return '$' + n;
+};
+
+function getInputs() {
+  return {
+    cap: +document.getElementById('cap').value,
+    dfs: +document.getElementById('dfs').value,
+    angels: +document.getElementById('angels').value,
+    other: +document.getElementById('other').value,
+    esop: +document.getElementById('esop').value / 100,
+    yc1pct: +document.getElementById('yc1').value / 100,
+    seedRaise: +document.getElementById('seedraise').value,
+    seedVal: +document.getElementById('seedval').value,
+    seriesAPct: +document.getElementById('seriesapct').value / 100,
+    seriesAVal: +document.getElementById('seriesaval').value,
+  };
+}
+
+function compute(inp) {
+  const dfsOwn = inp.dfs / inp.cap;
+  const angelsOwn = inp.angels > 0 ? inp.angels / inp.cap : 0;
+  const otherOwn = inp.other > 0 ? inp.other / inp.cap : 0;
+  const yc1Own = inp.yc1pct;
+  const esopOwn = inp.esop;
+  const foundersAfterYC = 1 - dfsOwn - angelsOwn - otherOwn - yc1Own - esopOwn;
+
+  // Seed
+  const newSeedPct = inp.seedRaise / inp.seedVal;
+  const yc2Own = 375000 / inp.seedVal;
+  const seedDilution = newSeedPct + yc2Own;
+  const retain = 1 - seedDilution;
+  const foundersAfterSeed = foundersAfterYC * retain;
+  const dfsAfterSeed = dfsOwn * retain;
+  const angelsAfterSeed = angelsOwn * retain;
+  const otherAfterSeed = otherOwn * retain;
+  const yc1AfterSeed = yc1Own * retain;
+  const esopAfterSeed = esopOwn * retain;
+
+  // Series A
+  const saRetain = 1 - inp.seriesAPct;
+  const foundersAfterSeriesA = foundersAfterSeed * saRetain;
+  const dfsAfterSeriesA = dfsAfterSeed * saRetain;
+  const otherAfterSeriesA = otherAfterSeed * saRetain;
+  const newSeedAfterSeriesA = newSeedPct * retain * saRetain;
+  const yc1AfterSeriesA = yc1AfterSeed * saRetain;
+  const yc2AfterSeriesA = yc2Own * retain * saRetain;
+  const angelsAfterSeriesA = angelsAfterSeed * saRetain;
+  const esopAfterSeriesA = esopAfterSeed * saRetain;
+
+  const founderValueAtSeriesA = foundersAfterSeriesA * inp.seriesAVal;
+  const totalPreseed = inp.dfs + inp.angels + inp.other;
+  const totalPreseedPct = dfsOwn + angelsOwn + otherOwn;
+
+  return {
+    stages: [
+      {
+        num: 1, title: 'Post-YC', sub: 'YC $125K converts at fixed ' + fmt(inp.yc1pct*100, 0),
+        founderPct: foundersAfterYC * 100,
+        rows: [
+          { name: 'InfraRed Founders', basis: 'Remainder after all stakeholders', pct: foundersAfterYC * 100, isFounder: true },
+          { name: 'ESOP Pool', basis: (inp.esop*100) + '% reserved for team', pct: esopOwn * 100 },
+          { name: 'DFS Lab', basis: fmtM(inp.dfs) + ' / ' + fmtM(inp.cap) + ' post-money SAFE', pct: dfsOwn * 100 },
+          { name: 'YC ($125K tranche)', basis: 'Fixed ' + fmt(inp.yc1pct*100, 0) + ' post-money', pct: yc1Own * 100, isNew: true },
+          ...(inp.angels > 0 ? [{ name: 'Angels (MFN)', basis: fmtM(inp.angels) + ' / ' + fmtM(inp.cap) + ' (MFN)', pct: angelsOwn * 100 }] : []),
+          ...(inp.other > 0 ? [{ name: 'Other Pre-Seed Investors', basis: fmtM(inp.other) + ' / ' + fmtM(inp.cap) + ' post-money SAFE', pct: otherOwn * 100 }] : []),
+        ],
+        insight: `The founders own <strong>${fmt(foundersAfterYC*100)}</strong> at this stage. Total pre-seed capital of <strong>${fmtM(totalPreseed)}</strong> converts at the $${(inp.cap/1000000).toFixed(1)}M cap, giving all pre-seed investors a combined <strong>${fmt(totalPreseedPct*100)}</strong>. The YC $125K is special — it always converts at exactly ${fmt(inp.yc1pct*100, 0)}, no matter what the company is worth. The ESOP pool is carved out here as well.`,
+      },
+      {
+        num: 2, title: 'Post-Seed', sub: fmtM(inp.seedRaise) + ' raised @ ' + fmtM(inp.seedVal) + ' post-money',
+        founderPct: foundersAfterSeed * 100,
+        rows: [
+          { name: 'InfraRed Founders', basis: fmt(foundersAfterYC*100) + ' diluted by ' + fmt(seedDilution*100), pct: foundersAfterSeed * 100, isFounder: true },
+          { name: 'ESOP Pool', basis: 'Diluted proportionally', pct: esopAfterSeed * 100 },
+          { name: 'New Seed Investors', basis: fmtM(inp.seedRaise) + ' / ' + fmtM(inp.seedVal), pct: newSeedPct * 100, isNew: true },
+          { name: 'DFS Lab', basis: 'Diluted proportionally', pct: dfsAfterSeed * 100 },
+          { name: 'YC ($125K)', basis: 'Diluted proportionally', pct: yc1AfterSeed * 100 },
+          { name: 'YC ($375K MFN)', basis: '$375K / ' + fmtM(inp.seedVal) + ' converts at seed', pct: yc2Own * 100, isNew: true },
+          ...(inp.angels > 0 ? [{ name: 'Angels', basis: 'Diluted proportionally', pct: angelsAfterSeed * 100 }] : []),
+          ...(inp.other > 0 ? [{ name: 'Other Pre-Seed Investors', basis: 'Diluted proportionally', pct: otherAfterSeed * 100 }] : []),
+        ],
+        insight: `Two things hit at once: new seed investors take ${fmt(newSeedPct*100)} AND YC's second $375K tranche converts at this valuation (taking ${fmt(yc2Own*100)}). Combined dilution is <strong>${fmt(seedDilution*100)}</strong> — everyone on the existing cap table shrinks proportionally. Founders drop from ${fmt(foundersAfterYC*100)} to <strong>${fmt(foundersAfterSeed*100)}</strong>.`,
+      },
+      {
+        num: 3, title: 'Post-Series A', sub: fmt(inp.seriesAPct*100, 0) + ' sold @ ' + fmtM(inp.seriesAVal) + ' post-money',
+        founderPct: foundersAfterSeriesA * 100,
+        founderValue: founderValueAtSeriesA,
+        rows: [
+          { name: 'InfraRed Founders', basis: fmt(foundersAfterSeed*100) + ' diluted by ' + fmt(inp.seriesAPct*100, 0), pct: foundersAfterSeriesA * 100, isFounder: true },
+          { name: 'ESOP Pool', basis: 'Pre top-up', pct: esopAfterSeriesA * 100 },
+          { name: 'Series A Investors', basis: fmt(inp.seriesAPct*100, 0) + ' of company', pct: inp.seriesAPct * 100, isNew: true },
+          { name: 'New Seed Investors', basis: 'Diluted by Series A', pct: newSeedAfterSeriesA * 100 },
+          { name: 'DFS Lab', basis: 'Diluted by Series A', pct: dfsAfterSeriesA * 100 },
+          { name: 'YC (combined)', basis: 'Both tranches diluted', pct: (yc1AfterSeriesA + yc2AfterSeriesA) * 100 },
+          ...(inp.angels > 0 ? [{ name: 'Angels', basis: 'Diluted by Series A', pct: angelsAfterSeriesA * 100 }] : []),
+          ...(inp.other > 0 ? [{ name: 'Other Pre-Seed Investors', basis: 'Diluted by Series A', pct: otherAfterSeriesA * 100 }] : []),
+        ],
+        insight: `Founders land at <strong>${fmt(foundersAfterSeriesA*100)}</strong> post-Series A. At a ${fmtM(inp.seriesAVal)} valuation, that founder stake is worth approximately <strong>${fmtM(founderValueAtSeriesA)}</strong> on paper. The Series A valuation is the biggest single lever — higher ARR, stronger NRR, and more paying customers push that number up and compound favorably for everyone.`,
+      },
+    ],
+    founderJourney: [
+      { label: 'Pre-seed', pct: (1 - totalPreseedPct) * 100 },
+      { label: 'Post-YC', pct: foundersAfterYC * 100 },
+      { label: 'Post-Seed', pct: foundersAfterSeed * 100 },
+      { label: 'Post-Series A', pct: foundersAfterSeriesA * 100 },
+    ]
+  };
+}
+
+const COLORS = {
+  'InfraRed Founders': '#00e5a0',
+  'ESOP Pool': '#4d9fff',
+  'DFS Lab': '#a78bfa',
+  'New Seed Investors': '#ff6b35',
+  'Series A Investors': '#ff6b35',
+  'YC ($125K tranche)': '#fbbf24',
+  'YC ($125K)': '#fbbf24',
+  'YC ($375K MFN)': '#f59e0b',
+  'YC (combined)': '#f59e0b',
+  'Angels (MFN)': '#e879f9',
+  'Angels': '#e879f9',
+  'New seed investors': '#ff6b35',
+  'Other Pre-Seed Investors': '#34d399',
+};
+
+function getColor(name) {
+  return COLORS[name] || '#6b7280';
+}
+
+function renderStage(s) {
+  const total = s.rows.reduce((a, r) => a + r.pct, 0);
+  const rows = s.rows.map(r => {
+    const barW = Math.min(100, (r.pct / Math.max(total, 100)) * 100);
+    return `<tr class="${r.isFounder ? 'founders-row' : r.isNew ? 'new-row' : ''}">
+      <td>
+        <div class="party-name">${r.name}</div>
+        <div class="party-basis">${r.basis}</div>
+        <div class="bar-wrapper"><div class="bar-fill" style="width:${barW}%;background:${getColor(r.name)}66;"></div></div>
+      </td>
+      <td><span class="pct-val" style="color:${getColor(r.name)}">${fmt(r.pct)}</span></td>
+    </tr>`;
+  }).join('');
+
+  const valueNote = s.founderValue ? `<div style="margin-top:10px;padding:8px 12px;background:var(--accent)11;border:1px solid var(--accent)33;border-radius:4px;font-size:12px;color:var(--accent)">💰 Founder stake value at this valuation: <strong>${fmtM(s.founderValue)}</strong></div>` : '';
+
+  return `<div class="stage-card">
+    <div class="stage-header" onclick="toggleStage(this)">
+      <div class="stage-header-left">
+        <div class="stage-num">${s.num}</div>
+        <div>
+          <h3>${s.title}</h3>
+          <div class="stage-sub">${s.sub}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div class="stage-founder-stat">
+          <div class="pct">${fmt(s.founderPct)}</div>
+          <div class="lbl">Founder ownership</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+    </div>
+    <div class="stage-body">
+      <table class="cap-table">
+        <thead><tr><th>Party</th><th>Ownership</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ${valueNote}
+      <div class="stage-insight">${s.insight}</div>
+    </div>
+  </div>`;
+}
+
+function toggleStage(header) {
+  const body = header.nextElementSibling;
+  const card = header.parentElement;
+  body.classList.toggle('collapsed');
+  card.classList.toggle('toggled');
+}
+
+function renderJourney(journey) {
+  const bar = document.getElementById('journeyBar');
+  const legend = document.getElementById('journeyLegend');
+  const colors = ['#00e5a0', '#4ade80', '#22d3ee', '#818cf8'];
+  bar.innerHTML = journey.map((j, i) => 
+    `<div class="journey-segment" style="width:${j.pct}%;background:${colors[i]};min-width:${j.pct > 5 ? '60px' : '0'}">${j.pct > 8 ? fmt(j.pct) : ''}</div>`
+  ).join('');
+  legend.innerHTML = journey.map((j, i) =>
+    `<div class="legend-item"><div class="legend-dot" style="background:${colors[i]}"></div>${j.label}: <strong style="color:${colors[i]};margin-left:4px">${fmt(j.pct)}</strong></div>`
+  ).join('');
+}
+
+function updateLabels(inp) {
+  document.getElementById('v_cap').textContent = fmtM(inp.cap);
+  document.getElementById('v_dfs').textContent = fmtM(inp.dfs);
+  document.getElementById('v_angels').textContent = fmtM(inp.angels);
+  document.getElementById('v_other').textContent = fmtM(inp.other);
+  document.getElementById('v_total_preseed').textContent = fmtM(inp.dfs + inp.angels + inp.other);
+  document.getElementById('v_esop').textContent = (inp.esop * 100) + '%';
+  document.getElementById('v_yc1').textContent = (inp.yc1pct * 100).toFixed(1) + '%';
+  document.getElementById('v_seedraise').textContent = fmtM(inp.seedRaise);
+  document.getElementById('v_seedval').textContent = fmtM(inp.seedVal);
+  document.getElementById('v_seriesapct').textContent = (inp.seriesAPct * 100).toFixed(0) + '%';
+  document.getElementById('v_seriesaval').textContent = fmtM(inp.seriesAVal);
+}
+
+function render() {
+  const inp = getInputs();
+  updateLabels(inp);
+  const data = compute(inp);
+  renderJourney(data.founderJourney);
+  const panel = document.getElementById('resultsPanel');
+  panel.innerHTML = data.stages.map(renderStage).join(
+    `<div class="stage-connector">dilution event ↓</div>`
+  );
+}
+
+document.querySelectorAll('input[type=range]').forEach(el => el.addEventListener('input', render));
+render();
+</script>
+</body>
+</html>
