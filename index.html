@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>InfraRed — Equity &amp; Dilution Model</title>
+<title>Equity &amp; Dilution Model</title>
 <style>
   :root {
     --bg: #ffffff;
@@ -38,8 +38,8 @@
 
   header {
     border-bottom: 1px solid var(--border);
-    padding-bottom: 32px;
-    margin-bottom: 48px;
+    padding-bottom: 24px;
+    margin-bottom: 40px;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
@@ -56,17 +56,33 @@
   }
   .logo-area p { color: var(--muted); font-size: 14px; margin-top: 4px; }
 
-  .badge {
-    background: linear-gradient(135deg, var(--accent)22, var(--accent)08);
-    border: 1px solid var(--accent)44;
-    color: var(--accent);
-    padding: 6px 14px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+  /* TABS */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
   }
+  .tab {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 5px;
+    background: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .tab.active {
+    background: #fff;
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .tab:hover:not(.active) { color: var(--text); }
 
   /* EXPLAINER SECTION */
   .section-label {
@@ -149,6 +165,7 @@
   }
 
   @media (max-width: 500px) {
+    .tab { padding: 8px 12px; font-size: 13px; }
     .stage-header {
       flex-wrap: wrap;
       gap: 12px;
@@ -251,6 +268,21 @@
   }
   input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
 
+  select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    width: 100%;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  select:focus { border-color: var(--accent)88; }
+
   /* RESULTS */
   .results-panel { display: flex; flex-direction: column; gap: 20px; }
 
@@ -262,6 +294,7 @@
     transition: border-color 0.2s;
   }
   .stage-card:hover { border-color: var(--accent)44; }
+  .stage-card.current-stage-card { border-color: var(--accent)66; }
 
   .stage-header {
     padding: 16px 20px;
@@ -458,7 +491,6 @@
   }
   input[type=number]:focus { border-color: var(--accent)88; }
 
-  /* NEW STYLES */
   input[type=text] {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -473,6 +505,25 @@
   }
   input[type=text]:focus { border-color: var(--accent)88; }
 
+  /* FOUNDER ROWS */
+  .founder-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+  .founder-color-dot {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .founder-name-input { flex: 1; min-width: 0; }
+
+  /* INVESTOR ROWS */
   .investor-row {
     display: flex;
     flex-direction: column;
@@ -588,6 +639,21 @@
     font-weight: normal;
     justify-content: flex-start;
   }
+
+  .current-stage-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--accent)15;
+    border: 1px solid var(--accent)33;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+    margin-left: 8px;
+  }
 </style>
 </head>
 <body>
@@ -596,139 +662,184 @@
 
   <header>
     <div class="logo-area">
-      <h1 id="headerTitle">InfraRed — Equity Model</h1>
-      <p>Equity &amp; Dilution walkthrough · February 2026</p>
+      <h1 id="headerTitle">Equity &amp; Dilution Model</h1>
+      <p>Understand how founder ownership changes as you raise money</p>
     </div>
-    <div class="badge">Confidential</div>
+    <div class="tab-bar">
+      <button class="tab" id="tabConcepts" onclick="switchTab('concepts')">Key Concepts</button>
+      <button class="tab" id="tabSimulation" onclick="switchTab('simulation')">Simulation</button>
+    </div>
   </header>
 
-  <!-- EXPLAINER -->
-  <div class="section-label">Key Concepts — Plain English</div>
-  <div class="explainer-grid">
-    <div class="concept-card green">
-      <h3>What is a SAFE?</h3>
-      <p>A SAFE (Simple Agreement for Future Equity) is not a loan and not shares yet. It's a promise that when a future funding round happens, your investor's money converts into shares at an agreed price. It lets you raise money now without having to officially price the company.</p>
-      <div class="example">DFS Lab gives InfraRed $100K today. InfraRed doesn't issue shares immediately. When a priced round happens (like YC or Seed), the $100K converts into shares automatically.</div>
-    </div>
-    <div class="concept-card orange">
-      <h3>What is a Valuation Cap?</h3>
-      <p>The cap is the maximum valuation at which your SAFE converts into shares. It protects early investors — even if your company is worth $10M when it converts, they convert as if it's worth the cap. This means they get more shares for their money.</p>
-      <div class="example">DFS Lab's cap is $3.5M (in your scenario). If InfraRed is worth $10M at Seed, DFS Lab still converts as if it's $3.5M — giving them a better deal as reward for investing early.</div>
-    </div>
-    <div class="concept-card blue">
-      <h3>What is Dilution?</h3>
-      <p>Every time you issue new shares (for investors, employees, etc.), the total number of shares grows — so each existing share represents a smaller slice of the pie. Your ownership % goes down. This is dilution. It's not necessarily bad — a smaller % of a bigger, more valuable company can be worth far more.</p>
-      <div class="example">You own 90% of a $1M company = $900K. After dilution you own 51% of a $40M company = $20.4M. The % dropped but the value exploded.</div>
-    </div>
-    <div class="concept-card green">
-      <h3>What is an ESOP Pool?</h3>
-      <p>An Employee Stock Option Pool (ESOP) is equity set aside to hire and retain employees. Investors typically require a 10-15% pool to be created before their investment, which dilutes founders. Managing how fast you grant options matters a lot.</p>
-      <div class="example">If you've given away most of your 10% ESOP pool by Series A, investors will demand you top it back up to ~12% before the round closes. Every point of that top-up comes from founders, not investors.</div>
-    </div>
-    <div class="concept-card orange">
-      <h3>What is an MFN Clause?</h3>
-      <p>Most Favoured Nation means an uncapped SAFE investor gets to convert at whatever the best terms are among future investors. Your existing $25K angels have uncapped SAFEs with MFN — they'll automatically get DFS Lab's $3.5M cap, because that's the reference price.</p>
-      <div class="example">Angel invested $25K on an uncapped SAFE + MFN. DFS Lab comes in at $3.5M cap. Angel now converts at $3.5M cap too — same as DFS Lab.</div>
-    </div>
-    <div class="concept-card blue">
-      <h3>Post-Money vs Pre-Money SAFE</h3>
-      <p>A post-money SAFE fixes your ownership % at the time of signing, regardless of who else invests later. $100K / $3.5M cap = 2.86% — that's DFS Lab's share, locked. A pre-money SAFE would mean more investors reduce DFS Lab's share. Post-money is cleaner and more predictable for both sides.</p>
-      <div class="example">DFS Lab: $100K / $3.5M = 2.86% ownership, locked at signing. Even if more angels pile in, DFS Lab stays at 2.86%.</div>
+  <!-- KEY CONCEPTS TAB -->
+  <div id="conceptsView">
+    <div class="section-label">Key Concepts — Plain English</div>
+    <div class="explainer-grid">
+      <div class="concept-card green">
+        <h3>What is a SAFE?</h3>
+        <p>A SAFE (Simple Agreement for Future Equity) is not a loan and not shares yet. It's a promise that when a future funding round happens, the investor's money converts into shares at an agreed price. It lets you raise money now without having to officially price the company.</p>
+        <div class="example">An investor puts in $100K on a SAFE today. No shares are issued yet. When a priced round happens (like an accelerator or Seed), the $100K converts into shares automatically.</div>
+      </div>
+      <div class="concept-card orange">
+        <h3>What is a Valuation Cap?</h3>
+        <p>The cap is the maximum valuation at which a SAFE converts into shares. It protects early investors — even if your company is worth $10M when it converts, they convert as if it's worth the cap. This means they get more shares for their money as a reward for investing early.</p>
+        <div class="example">An investor has a $3.5M cap. If your company is worth $10M at the Seed round, they still convert as if it's $3.5M — a better price per share as their early-investor reward.</div>
+      </div>
+      <div class="concept-card blue">
+        <h3>What is Dilution?</h3>
+        <p>Every time you issue new shares (for investors, employees, etc.), the total number of shares grows — so each existing share represents a smaller slice of the pie. Your ownership % goes down. This isn't necessarily bad — a smaller % of a bigger, more valuable company can be worth far more.</p>
+        <div class="example">You own 90% of a $1M company = $900K. After dilution you own 51% of a $40M company = $20.4M. The % dropped but the value exploded.</div>
+      </div>
+      <div class="concept-card green">
+        <h3>What is an ESOP Pool?</h3>
+        <p>An Employee Stock Option Pool (ESOP) is equity set aside to hire and retain employees. Investors typically require a 10–15% pool to be created before their investment, which dilutes founders. Managing how fast you grant options matters a lot.</p>
+        <div class="example">If you've used most of your 10% ESOP pool before Series A, investors will ask you to top it back up to ~12% before the round closes. Every point of that top-up comes from founders, not investors.</div>
+      </div>
+      <div class="concept-card orange">
+        <h3>What is an MFN Clause?</h3>
+        <p>Most Favoured Nation means an uncapped SAFE investor gets to convert at whatever the best terms are among future investors. If you have an uncapped SAFE with MFN and a later investor gets a $3.5M cap, the MFN investor automatically gets that same cap.</p>
+        <div class="example">An angel invested $25K on an uncapped SAFE + MFN. A later investor comes in at a $3.5M cap. The angel now converts at $3.5M too — same as the later investor, as reward for going in first.</div>
+      </div>
+      <div class="concept-card blue">
+        <h3>Post-Money vs Pre-Money SAFE</h3>
+        <p>A post-money SAFE fixes your ownership % at the time of signing, regardless of who else invests later. $100K / $3.5M cap = 2.86% — locked. A pre-money SAFE means more investors reduce that investor's share. Post-money is cleaner and more predictable for both sides.</p>
+        <div class="example">$100K on a $3.5M post-money SAFE = 2.86% ownership, locked at signing. Even if more angels pile in later, that investor stays at 2.86%.</div>
+      </div>
     </div>
   </div>
 
-  <!-- SUMMARY -->
-  <div class="section-label">Founder Ownership Journey</div>
-  <div class="summary-track">
-    <h2>How Founder Ownership Shrinks Stage by Stage</h2>
-    <div class="journey-bar" id="journeyBar"></div>
-    <div class="journey-legend" id="journeyLegend"></div>
-  </div>
+  <!-- SIMULATION TAB -->
+  <div id="simulationView" style="display:none">
 
-  <!-- MODEL -->
-  <div class="section-label">Interactive Model — Adjust the Numbers</div>
-  <div class="model-layout">
-
-    <div class="controls-panel">
-      <h2>⚙ Model Inputs</h2>
-
-      <!-- Company -->
-      <div class="control-group">
-        <div class="control-group-title">Company</div>
-        <div class="input-row">
-          <label>Company Name</label>
-          <input type="text" id="companyName" value="InfraRed" oninput="render()">
-        </div>
-        <div class="input-row">
-          <label>ESOP Pool <span class="val" id="v_esop">10%</span></label>
-          <input type="range" id="esop" min="5" max="20" step="0.5" value="10">
-        </div>
-      </div>
-
-      <!-- Pre-Seed Investors -->
-      <div class="control-group">
-        <div class="control-group-title">Pre-Seed Investors</div>
-        <div id="investorList"></div>
-        <div id="preseedSummary" class="preseed-summary"></div>
-        <button class="add-btn" onclick="addInvestor()">+ Add Investor</button>
-      </div>
-
-      <!-- Accelerator -->
-      <div class="control-group">
-        <div class="accel-header">
-          <div class="control-group-title" style="margin-bottom:0">Accelerator</div>
-          <label class="accel-enable-label">
-            <input type="checkbox" id="accelEnabled" checked onchange="toggleAccel()"> Enable
-          </label>
-        </div>
-        <div id="accelInputs">
-          <div class="input-row">
-            <label>Name</label>
-            <input type="text" id="accelName" value="YC" oninput="render()">
-          </div>
-          <div class="input-row">
-            <label>Tranche 1 Amount</label>
-            <input type="number" id="accelT1Amount" value="125000" oninput="render()">
-          </div>
-          <div class="input-row">
-            <label>Tranche 1 % <span class="val" id="v_yc1">7%</span></label>
-            <input type="range" id="yc1" min="5" max="10" step="0.5" value="7">
-          </div>
-          <div class="input-row">
-            <label>Tranche 2 Amount <small style="color:var(--muted)">(0 to skip)</small></label>
-            <input type="number" id="accelT2Amount" value="375000" oninput="render()">
-          </div>
-        </div>
-      </div>
-
-      <!-- Seed -->
-      <div class="control-group">
-        <div class="control-group-title">Seed Round</div>
-        <div class="input-row">
-          <label>Seed Raise <span class="val" id="v_seedraise">$1.5M</span></label>
-          <input type="range" id="seedraise" min="500000" max="4000000" step="100000" value="1500000">
-        </div>
-        <div class="input-row">
-          <label>Seed Post-Money Val. <span class="val" id="v_seedval">$15M</span></label>
-          <input type="range" id="seedval" min="5000000" max="40000000" step="500000" value="15000000">
-        </div>
-      </div>
-
-      <!-- Series A -->
-      <div class="control-group">
-        <div class="control-group-title">Series A</div>
-        <div class="input-row">
-          <label>Series A % Sold <span class="val" id="v_seriesapct">20%</span></label>
-          <input type="range" id="seriesapct" min="10" max="35" step="1" value="20">
-        </div>
-        <div class="input-row">
-          <label>Series A Post-Money <span class="val" id="v_seriesaval">$40M</span></label>
-          <input type="range" id="seriesaval" min="15000000" max="120000000" step="1000000" value="40000000">
-        </div>
-      </div>
+    <!-- SUMMARY -->
+    <div class="section-label">Founder Ownership Journey</div>
+    <div class="summary-track">
+      <h2>How Founder Ownership Shifts Stage by Stage</h2>
+      <div class="journey-bar" id="journeyBar"></div>
+      <div class="journey-legend" id="journeyLegend"></div>
     </div>
 
-    <div class="results-panel" id="resultsPanel"></div>
+    <!-- MODEL -->
+    <div class="section-label">Interactive Model — Adjust the Numbers</div>
+    <div class="model-layout">
+
+      <div class="controls-panel">
+        <h2>&#9881; Model Inputs</h2>
+
+        <!-- Current Stage -->
+        <div class="control-group">
+          <div class="control-group-title">Starting Point</div>
+          <div class="input-row">
+            <label>Current stage</label>
+            <select id="currentStage" onchange="render()">
+              <option value="founders">Founders only (pre-investment)</option>
+              <option value="preseed">Pre-seed invested</option>
+              <option value="accel">Post-accelerator</option>
+              <option value="seed">Post-seed</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Founders -->
+        <div class="control-group">
+          <div class="control-group-title">Founders</div>
+          <div id="founderList"></div>
+          <button class="add-btn" onclick="addFounder()">+ Add Founder</button>
+        </div>
+
+        <!-- Company -->
+        <div class="control-group">
+          <div class="control-group-title">Company</div>
+          <div class="input-row">
+            <label>Company Name</label>
+            <input type="text" id="companyName" placeholder="e.g. Acme Inc." oninput="render()">
+          </div>
+          <div class="input-row">
+            <label>ESOP Pool <span class="val" id="v_esop">10%</span></label>
+            <input type="range" id="esop" min="5" max="20" step="0.5" value="10">
+          </div>
+        </div>
+
+        <!-- Pre-Seed Investors -->
+        <div class="control-group">
+          <div class="control-group-title">Pre-Seed Investors</div>
+          <div id="investorList"></div>
+          <div id="preseedSummary" class="preseed-summary"></div>
+          <button class="add-btn" onclick="addInvestor()">+ Add Investor</button>
+        </div>
+
+        <!-- Accelerator -->
+        <div class="control-group">
+          <div class="accel-header">
+            <div class="control-group-title" style="margin-bottom:0">Accelerator</div>
+            <label class="accel-enable-label">
+              <input type="checkbox" id="accelEnabled" onchange="toggleAccel()"> Enable
+            </label>
+          </div>
+          <div id="accelInputs" style="display:none">
+            <div class="input-row">
+              <label>Name</label>
+              <input type="text" id="accelName" value="YC" oninput="render()">
+            </div>
+            <div class="input-row">
+              <label>Tranche 1 Amount</label>
+              <input type="number" id="accelT1Amount" value="125000" oninput="render()">
+            </div>
+            <div class="input-row">
+              <label>Tranche 1 % <span class="val" id="v_yc1">7%</span></label>
+              <input type="range" id="yc1" min="5" max="10" step="0.5" value="7">
+            </div>
+            <div class="input-row">
+              <label>Tranche 2 Amount <small style="color:var(--muted)">(0 to skip)</small></label>
+              <input type="number" id="accelT2Amount" value="375000" oninput="render()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seed -->
+        <div class="control-group">
+          <div class="accel-header">
+            <div class="control-group-title" style="margin-bottom:0">Seed Round</div>
+            <label class="accel-enable-label">
+              <input type="checkbox" id="seedEnabled" checked onchange="toggleSeed()"> Enable
+            </label>
+          </div>
+          <div id="seedInputs">
+            <div class="input-row" style="margin-top:14px">
+              <label>Seed Raise <span class="val" id="v_seedraise">$1.5M</span></label>
+              <input type="range" id="seedraise" min="500000" max="4000000" step="100000" value="1500000">
+            </div>
+            <div class="input-row">
+              <label>Seed Post-Money Val. <span class="val" id="v_seedval">$15M</span></label>
+              <input type="range" id="seedval" min="5000000" max="40000000" step="500000" value="15000000">
+            </div>
+          </div>
+        </div>
+
+        <!-- Series A -->
+        <div class="control-group">
+          <div class="accel-header">
+            <div class="control-group-title" style="margin-bottom:0">Series A</div>
+            <label class="accel-enable-label">
+              <input type="checkbox" id="seriesAEnabled" checked onchange="toggleSeriesA()"> Enable
+            </label>
+          </div>
+          <div id="seriesAInputs">
+            <div class="input-row" style="margin-top:14px">
+              <label>Series A % Sold <span class="val" id="v_seriesapct">20%</span></label>
+              <input type="range" id="seriesapct" min="10" max="35" step="1" value="20">
+            </div>
+            <div class="input-row">
+              <label>Series A Post-Money <span class="val" id="v_seriesaval">$40M</span></label>
+              <input type="range" id="seriesaval" min="15000000" max="120000000" step="1000000" value="40000000">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="results-panel" id="resultsPanel"></div>
+    </div>
+
   </div>
 
 </div>
@@ -741,18 +852,57 @@ const fmtM = (n) => {
   return '$' + n;
 };
 
-let investors = [
-  { id: 1, name: 'DFS Lab',        amount: 100000, cap: 3500000, mfn: false },
-  { id: 2, name: 'Angels',         amount: 25000,  cap: 3500000, mfn: true  },
-  { id: 3, name: 'Other Pre-Seed', amount: 225000, cap: 3500000, mfn: false },
+// Founders
+const FOUNDER_PALETTE = ['#00e5a0','#818cf8','#f472b6','#fbbf24','#38bdf8','#4ade80'];
+let founders = [
+  { id: 1, name: 'Founder 1' },
+  { id: 2, name: 'Founder 2' },
 ];
-let nextId = 4;
+let nextFounderId = 3;
+
+function addFounder() {
+  founders.push({ id: nextFounderId++, name: 'Founder ' + (founders.length + 1) });
+  renderFounderList();
+  render();
+}
+
+function removeFounder(id) {
+  if (founders.length <= 1) return;
+  founders = founders.filter(f => f.id !== id);
+  renderFounderList();
+  render();
+}
+
+function updateFounderName(id, val) {
+  const f = founders.find(f => f.id === id);
+  if (f) f.name = val;
+  render();
+}
+
+function renderFounderList() {
+  const container = document.getElementById('founderList');
+  if (!container) return;
+  container.innerHTML = founders.map((f, idx) => {
+    const color = FOUNDER_PALETTE[idx % FOUNDER_PALETTE.length];
+    return `<div class="founder-row">
+      <div class="founder-color-dot" style="background:${color}"></div>
+      <input type="text" class="founder-name-input" value="${f.name.replace(/"/g,'&quot;')}"
+        oninput="updateFounderName(${f.id}, this.value)">
+      <button class="remove-btn" onclick="removeFounder(${f.id})" title="Remove founder"
+        ${founders.length <= 1 ? 'disabled style="opacity:0.3;cursor:not-allowed"' : ''}>×</button>
+    </div>`;
+  }).join('');
+}
+
+// Investors
+let investors = [];
+let nextInvId = 1;
 const INV_PALETTE = ['#a78bfa','#e879f9','#34d399','#60a5fa','#fb923c','#f472b6','#38bdf8','#4ade80'];
 
 function addInvestor() {
   const nonMfn = investors.filter(i => !i.mfn && i.amount > 0 && i.cap > 0);
   const defaultCap = nonMfn.length > 0 ? Math.min(...nonMfn.map(i => i.cap)) : 3500000;
-  investors.push({ id: nextId++, name: 'New Investor', amount: 50000, cap: defaultCap, mfn: false });
+  investors.push({ id: nextInvId++, name: 'Investor', amount: 50000, cap: defaultCap, mfn: false });
   renderInvestorList();
   render();
 }
@@ -774,6 +924,10 @@ function updateInvestorField(id, field, val) {
 function renderInvestorList() {
   const container = document.getElementById('investorList');
   if (!container) return;
+  if (investors.length === 0) {
+    container.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:4px 0 8px">No pre-seed investors yet.</div>';
+    return;
+  }
   container.innerHTML = investors.map((inv, idx) => {
     const color = INV_PALETTE[idx % INV_PALETTE.length];
     const capField = inv.mfn
@@ -809,10 +963,40 @@ function toggleAccel() {
   render();
 }
 
+function toggleSeed() {
+  const enabled = document.getElementById('seedEnabled').checked;
+  const inputs = document.getElementById('seedInputs');
+  if (inputs) inputs.style.display = enabled ? '' : 'none';
+  // Series A without Seed doesn't make much sense — warn via opacity
+  const saGroup = document.getElementById('seriesAEnabled');
+  if (saGroup) saGroup.disabled = !enabled;
+  if (!enabled && saGroup) {
+    saGroup.checked = false;
+    document.getElementById('seriesAInputs').style.display = 'none';
+  }
+  render();
+}
+
+function toggleSeriesA() {
+  const enabled = document.getElementById('seriesAEnabled').checked;
+  const inputs = document.getElementById('seriesAInputs');
+  if (inputs) inputs.style.display = enabled ? '' : 'none';
+  render();
+}
+
+function switchTab(tab) {
+  document.getElementById('conceptsView').style.display = tab === 'concepts' ? '' : 'none';
+  document.getElementById('simulationView').style.display = tab === 'simulation' ? '' : 'none';
+  document.getElementById('tabConcepts').classList.toggle('active', tab === 'concepts');
+  document.getElementById('tabSimulation').classList.toggle('active', tab === 'simulation');
+}
+
 function getInputs() {
   return {
-    companyName: document.getElementById('companyName').value || 'Company',
+    companyName: document.getElementById('companyName').value.trim(),
+    founders: founders,
     investors: investors,
+    currentStage: document.getElementById('currentStage').value,
     accel: {
       enabled: document.getElementById('accelEnabled').checked,
       name: document.getElementById('accelName').value || 'Accelerator',
@@ -821,17 +1005,22 @@ function getInputs() {
       t2Amount: +document.getElementById('accelT2Amount').value || 0,
     },
     esop: +document.getElementById('esop').value / 100,
+    seedEnabled: document.getElementById('seedEnabled').checked,
     seedRaise: +document.getElementById('seedraise').value,
     seedVal: +document.getElementById('seedval').value,
+    seriesAEnabled: document.getElementById('seriesAEnabled').checked,
     seriesAPct: +document.getElementById('seriesapct').value / 100,
     seriesAVal: +document.getElementById('seriesaval').value,
   };
 }
 
 function compute(inp) {
-  const { investors: invs, accel, esop, seedRaise, seedVal, seriesAPct, seriesAVal, companyName } = inp;
+  const { founders: fndrs, investors: invs, accel, esop, seedEnabled, seedRaise, seedVal, seriesAEnabled, seriesAPct, seriesAVal, companyName } = inp;
+  const coName = companyName || 'Founders';
+  const founderCount = fndrs.length;
+  const equalSplit = founderCount > 0 ? 100 / founderCount : 100;
 
-  // MFN effective cap = min cap among non-MFN investors with non-zero amounts
+  // MFN effective cap
   const nonMfnCaps = invs.filter(i => !i.mfn && i.amount > 0 && i.cap > 0).map(i => i.cap);
   const mfnEffectiveCap = nonMfnCaps.length > 0 ? Math.min(...nonMfnCaps) : 0;
 
@@ -848,8 +1037,8 @@ function compute(inp) {
   const foundersAfterAccel = Math.max(0, 1 - totalInvPct - esopFrac - accelT1Frac);
 
   // Seed
-  const newSeedFrac = seedRaise / seedVal;
-  const accelT2Frac = (accel.enabled && accel.t2Amount > 0) ? accel.t2Amount / seedVal : 0;
+  const newSeedFrac = seedEnabled ? seedRaise / seedVal : 0;
+  const accelT2Frac = (accel.enabled && accel.t2Amount > 0 && seedEnabled) ? accel.t2Amount / seedVal : 0;
   const seedDilution = newSeedFrac + accelT2Frac;
   const seedRetain = 1 - seedDilution;
 
@@ -859,7 +1048,7 @@ function compute(inp) {
   const accelT1AfterSeed = accelT1Frac * seedRetain;
 
   // Series A
-  const saRetain = 1 - seriesAPct;
+  const saRetain = seriesAEnabled ? 1 - seriesAPct : 1;
   const foundersAfterSeriesA = foundersAfterSeed * saRetain;
   const invAfterSeriesA = invAfterSeed.map(i => ({ ...i, pct: i.pct * saRetain }));
   const esopAfterSeriesA = esopAfterSeed * saRetain;
@@ -876,13 +1065,31 @@ function compute(inp) {
     ? ` MFN investors convert at the lowest non-MFN cap of ${fmtM(mfnEffectiveCap)}.`
     : '';
 
+  // Stage 0: Founders only
+  const stage0Rows = fndrs.map((f, idx) => ({
+    name: f.name || `Founder ${idx + 1}`,
+    basis: `${fmt(equalSplit, 1)} equal split`,
+    pct: equalSplit,
+    color: FOUNDER_PALETTE[idx % FOUNDER_PALETTE.length],
+    isFounder: true,
+  }));
+  const stage0 = {
+    num: 0,
+    title: 'Starting Point',
+    sub: `${founderCount} founder${founderCount !== 1 ? 's' : ''} — equal split`,
+    founderPct: 100,
+    rows: stage0Rows,
+    insight: `Before any external capital, founders own <strong>100%</strong> of the company split equally${founderCount > 1 ? ' among ' + founderCount + ' co-founders' : ''}. Every round of financing from here will dilute this ownership — but used strategically, that dilution funds the growth that makes each remaining percent far more valuable.`,
+    isCurrent: true,
+  };
+
   // Stage 1
   const stage1Title = accel.enabled ? `Post-${accelLabel}` : 'Initial Cap Table';
   const stage1Sub = accel.enabled
     ? `${accelLabel} ${fmtM(accel.t1Amount)} converts at fixed ${fmt(accel.t1Pct * 100, 0)}`
     : 'Pre-seed investors + ESOP';
   const stage1Rows = [
-    { name: `${companyName} Founders`, basis: 'Remainder after all stakeholders', pct: foundersAfterAccel * 100, color: '#00e5a0', isFounder: true },
+    { name: `${coName} Founders`, basis: 'Remainder after all stakeholders', pct: foundersAfterAccel * 100, color: '#00e5a0', isFounder: true },
     { name: 'ESOP Pool', basis: `${(esop * 100).toFixed(1)}% reserved for team`, pct: esopFrac * 100, color: '#4d9fff' },
     ...(accel.enabled ? [{ name: `${accelLabel} (${fmtM(accel.t1Amount)} tranche)`, basis: `Fixed ${fmt(accel.t1Pct * 100, 0)} post-money`, pct: accelT1Frac * 100, color: '#fbbf24', isNew: true }] : []),
     ...invOwn.map(i => ({
@@ -893,12 +1100,12 @@ function compute(inp) {
     })),
   ];
   const stage1Insight = accel.enabled
-    ? `The founders own <strong>${fmt(foundersAfterAccel * 100)}</strong> at this stage. Total pre-seed capital of <strong>${fmtM(totalPreseed)}</strong> converts at their respective caps. The ${accelLabel} ${fmtM(accel.t1Amount)} is special — it converts at exactly ${fmt(accel.t1Pct * 100, 0)}, no matter what the company is worth.${mfnNote} The ESOP pool is carved out here as well.`
+    ? `The founders own <strong>${fmt(foundersAfterAccel * 100)}</strong> at this stage. Total pre-seed capital of <strong>${fmtM(totalPreseed)}</strong> converts at their respective caps. The ${accelLabel} ${fmtM(accel.t1Amount)} converts at exactly ${fmt(accel.t1Pct * 100, 0)}, no matter what the company is worth.${mfnNote} The ESOP pool is carved out here as well.`
     : `The founders own <strong>${fmt(foundersAfterAccel * 100)}</strong>. Total pre-seed capital of <strong>${fmtM(totalPreseed)}</strong> converts at respective caps.${mfnNote} The ESOP pool is carved out here.`;
 
   // Stage 2
   const stage2Rows = [
-    { name: `${companyName} Founders`, basis: `${fmt(foundersAfterAccel * 100)} diluted by ${fmt(seedDilution * 100)}`, pct: foundersAfterSeed * 100, color: '#00e5a0', isFounder: true },
+    { name: `${coName} Founders`, basis: `${fmt(foundersAfterAccel * 100)} diluted by ${fmt(seedDilution * 100)}`, pct: foundersAfterSeed * 100, color: '#00e5a0', isFounder: true },
     { name: 'ESOP Pool', basis: 'Diluted proportionally', pct: esopAfterSeed * 100, color: '#4d9fff' },
     { name: 'New Seed Investors', basis: `${fmtM(seedRaise)} / ${fmtM(seedVal)}`, pct: newSeedFrac * 100, color: '#ff6b35', isNew: true },
     ...(accel.enabled && accel.t1Amount > 0 ? [{ name: `${accelLabel} (${fmtM(accel.t1Amount)})`, basis: 'Diluted proportionally', pct: accelT1AfterSeed * 100, color: '#fbbf24' }] : []),
@@ -911,33 +1118,36 @@ function compute(inp) {
   const stage2Lead = (accel.enabled && accel.t2Amount > 0)
     ? `Two things hit at once: new seed investors take ${fmt(newSeedFrac * 100)}${accelT2Part}`
     : `New seed investors take ${fmt(newSeedFrac * 100)}. `;
-  const stage2Insight = `${stage2Lead}Combined dilution is <strong>${fmt(seedDilution * 100)}</strong> — everyone on the existing cap table shrinks proportionally. Founders drop from ${fmt(foundersAfterAccel * 100)} to <strong>${fmt(foundersAfterSeed * 100)}</strong>.`;
+  const stage2Insight = `${stage2Lead}Combined dilution is <strong>${fmt(seedDilution * 100)}</strong> — everyone on the existing cap table shrinks proportionally. Founders drop to <strong>${fmt(foundersAfterSeed * 100)}</strong>.`;
 
   // Stage 3
   const accelCombinedAfterA = accelT1AfterSeriesA + accelT2AfterSeriesA;
   const stage3Rows = [
-    { name: `${companyName} Founders`, basis: `${fmt(foundersAfterSeed * 100)} diluted by ${fmt(seriesAPct * 100, 0)}`, pct: foundersAfterSeriesA * 100, color: '#00e5a0', isFounder: true },
+    { name: `${coName} Founders`, basis: `${fmt(foundersAfterSeed * 100)} diluted by ${fmt(seriesAPct * 100, 0)}`, pct: foundersAfterSeriesA * 100, color: '#00e5a0', isFounder: true },
     { name: 'ESOP Pool', basis: 'Pre top-up', pct: esopAfterSeriesA * 100, color: '#4d9fff' },
     { name: 'Series A Investors', basis: `${fmt(seriesAPct * 100, 0)} of company`, pct: seriesAPct * 100, color: '#ff6b35', isNew: true },
     { name: 'New Seed Investors', basis: 'Diluted by Series A', pct: newSeedAfterSeriesA * 100, color: '#ff6b35' },
     ...(accel.enabled && accelCombinedAfterA > 0.0001 ? [{ name: `${accelLabel} (combined)`, basis: 'Both tranches diluted', pct: accelCombinedAfterA * 100, color: '#f59e0b' }] : []),
     ...invAfterSeriesA.map(i => ({ name: i.name, basis: 'Diluted by Series A', pct: i.pct * 100, color: i.color })),
   ];
-  const stage3Insight = `Founders land at <strong>${fmt(foundersAfterSeriesA * 100)}</strong> post-Series A. At a ${fmtM(seriesAVal)} valuation, that founder stake is worth approximately <strong>${fmtM(founderValueAtSeriesA)}</strong> on paper. The Series A valuation is the biggest single lever — higher ARR, stronger NRR, and more paying customers push that number up and compound favorably for everyone.`;
+  const stage3Insight = `Founders land at <strong>${fmt(foundersAfterSeriesA * 100)}</strong> post-Series A. At a ${fmtM(seriesAVal)} valuation, that founder stake is worth approximately <strong>${fmtM(founderValueAtSeriesA)}</strong> on paper. The Series A valuation is the biggest lever — higher ARR, stronger NRR, and more paying customers push that number up.`;
 
-  return {
-    stages: [
-      { num: 1, title: stage1Title, sub: stage1Sub, founderPct: foundersAfterAccel * 100, rows: stage1Rows, insight: stage1Insight },
-      { num: 2, title: 'Post-Seed', sub: `${fmtM(seedRaise)} raised @ ${fmtM(seedVal)} post-money`, founderPct: foundersAfterSeed * 100, rows: stage2Rows, insight: stage2Insight },
-      { num: 3, title: 'Post-Series A', sub: `${fmt(seriesAPct * 100, 0)} sold @ ${fmtM(seriesAVal)} post-money`, founderPct: foundersAfterSeriesA * 100, founderValue: founderValueAtSeriesA, rows: stage3Rows, insight: stage3Insight },
-    ],
-    founderJourney: [
-      { label: 'Pre-seed', pct: Math.max(0, (1 - totalInvPct) * 100) },
-      { label: accel.enabled ? `Post-${accelLabel}` : 'With ESOP', pct: foundersAfterAccel * 100 },
-      { label: 'Post-Seed', pct: foundersAfterSeed * 100 },
-      { label: 'Post-Series A', pct: foundersAfterSeriesA * 100 },
-    ],
-  };
+  const allStages = [
+    stage0,
+    { num: 1, title: stage1Title, sub: stage1Sub, founderPct: foundersAfterAccel * 100, rows: stage1Rows, insight: stage1Insight },
+    ...(seedEnabled ? [{ num: 2, title: 'Post-Seed', sub: `${fmtM(seedRaise)} raised @ ${fmtM(seedVal)} post-money`, founderPct: foundersAfterSeed * 100, rows: stage2Rows, insight: stage2Insight }] : []),
+    ...(seriesAEnabled ? [{ num: seedEnabled ? 3 : 2, title: 'Post-Series A', sub: `${fmt(seriesAPct * 100, 0)} sold @ ${fmtM(seriesAVal)} post-money`, founderPct: foundersAfterSeriesA * 100, founderValue: founderValueAtSeriesA, rows: stage3Rows, insight: stage3Insight }] : []),
+  ];
+
+  // founderJourney — only include enabled stages
+  const founderJourney = [
+    { label: 'Founders only', pct: 100 },
+    { label: accel.enabled ? `Post-${accelLabel}` : 'With ESOP', pct: foundersAfterAccel * 100 },
+    ...(seedEnabled ? [{ label: 'Post-Seed', pct: foundersAfterSeed * 100 }] : []),
+    ...(seriesAEnabled ? [{ label: 'Post-Series A', pct: foundersAfterSeriesA * 100 }] : []),
+  ];
+
+  return { allStages, founderJourney };
 }
 
 function renderStage(s) {
@@ -956,15 +1166,17 @@ function renderStage(s) {
   }).join('');
 
   const valueNote = s.founderValue
-    ? `<div style="margin-top:10px;padding:8px 12px;background:var(--accent)11;border:1px solid var(--accent)33;border-radius:4px;font-size:12px;color:var(--accent)">💰 Founder stake value at this valuation: <strong>${fmtM(s.founderValue)}</strong></div>`
+    ? `<div style="margin-top:10px;padding:8px 12px;background:var(--accent)11;border:1px solid var(--accent)33;border-radius:4px;font-size:12px;color:var(--accent)">Founder stake value at this valuation: <strong>${fmtM(s.founderValue)}</strong></div>`
     : '';
 
-  return `<div class="stage-card">
+  const currentBadge = s.isCurrent ? `<span class="current-stage-badge">NOW</span>` : '';
+
+  return `<div class="stage-card${s.isCurrent ? ' current-stage-card' : ''}">
     <div class="stage-header" onclick="toggleStage(this)">
       <div class="stage-header-left">
         <div class="stage-num">${s.num}</div>
         <div>
-          <h3>${s.title}</h3>
+          <h3>${s.title}${currentBadge}</h3>
           <div class="stage-sub">${s.sub}</div>
         </div>
       </div>
@@ -973,7 +1185,7 @@ function renderStage(s) {
           <div class="pct">${fmt(s.founderPct)}</div>
           <div class="lbl">Founder ownership</div>
         </div>
-        <div class="toggle-icon">▼</div>
+        <div class="toggle-icon">&#9660;</div>
       </div>
     </div>
     <div class="stage-body">
@@ -1009,10 +1221,14 @@ function renderJourney(journey) {
 function updateLabels(inp) {
   document.getElementById('v_esop').textContent = (inp.esop * 100).toFixed(1) + '%';
   document.getElementById('v_yc1').textContent = (inp.accel.t1Pct * 100).toFixed(1) + '%';
-  document.getElementById('v_seedraise').textContent = fmtM(inp.seedRaise);
-  document.getElementById('v_seedval').textContent = fmtM(inp.seedVal);
-  document.getElementById('v_seriesapct').textContent = (inp.seriesAPct * 100).toFixed(0) + '%';
-  document.getElementById('v_seriesaval').textContent = fmtM(inp.seriesAVal);
+  if (inp.seedEnabled) {
+    document.getElementById('v_seedraise').textContent = fmtM(inp.seedRaise);
+    document.getElementById('v_seedval').textContent = fmtM(inp.seedVal);
+  }
+  if (inp.seriesAEnabled) {
+    document.getElementById('v_seriesapct').textContent = (inp.seriesAPct * 100).toFixed(0) + '%';
+    document.getElementById('v_seriesaval').textContent = fmtM(inp.seriesAVal);
+  }
 
   const totalRaise = investors.reduce((a, i) => a + i.amount, 0);
   const nonMfnCaps = investors.filter(i => !i.mfn && i.amount > 0 && i.cap > 0).map(i => i.cap);
@@ -1021,26 +1237,43 @@ function updateLabels(inp) {
   const mfnNote = (hasMfn && mfnCap)
     ? ` &nbsp;·&nbsp; MFN cap: <strong style="color:var(--accent)">${fmtM(mfnCap)}</strong>`
     : '';
-  document.getElementById('preseedSummary').innerHTML =
-    `Total raise: <strong style="color:var(--accent)">${fmtM(totalRaise)}</strong>${mfnNote}`;
+  const summaryEl = document.getElementById('preseedSummary');
+  if (summaryEl) {
+    summaryEl.style.display = investors.length > 0 ? '' : 'none';
+    summaryEl.innerHTML = `Total raise: <strong style="color:var(--accent)">${fmtM(totalRaise)}</strong>${mfnNote}`;
+  }
 }
 
 function render() {
   const inp = getInputs();
   updateLabels(inp);
-  const data = compute(inp);
-  renderJourney(data.founderJourney);
-  document.getElementById('resultsPanel').innerHTML = data.stages.map(renderStage).join(
-    `<div class="stage-connector">dilution event ↓</div>`
+  const { allStages, founderJourney } = compute(inp);
+  renderJourney(founderJourney);
+
+  // Filter stages based on currentStage
+  const stageStart = { founders: 0, preseed: 1, accel: 2, seed: 3 }[inp.currentStage] || 0;
+
+  // Mark the starting stage card as "current"
+  allStages.forEach((s, i) => { s.isCurrent = i === stageStart; });
+
+  const visibleStages = allStages.slice(stageStart);
+
+  document.getElementById('resultsPanel').innerHTML = visibleStages.map(renderStage).join(
+    `<div class="stage-connector">dilution event &#8595;</div>`
   );
+
+  const name = inp.companyName;
   const ht = document.getElementById('headerTitle');
-  if (ht) ht.textContent = inp.companyName + ' — Equity Model';
-  document.title = inp.companyName + ' — Equity & Dilution Model';
+  if (ht) ht.textContent = name ? name + ' — Equity Model' : 'Equity & Dilution Model';
+  document.title = name ? name + ' — Equity & Dilution Model' : 'Equity & Dilution Model';
 }
 
+// Init
+renderFounderList();
 renderInvestorList();
 document.querySelectorAll('input[type=range]').forEach(el => el.addEventListener('input', render));
-toggleAccel(); // sets initial visibility and calls render()
+switchTab('concepts');
+render();
 </script>
 </body>
 </html>
